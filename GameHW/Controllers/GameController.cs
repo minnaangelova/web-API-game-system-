@@ -12,7 +12,7 @@ namespace GameHW.Controllers
     public class GameController : ApiController
     {
 
-        private readonly DatabaseContext dbc = new DatabaseContext();
+        private readonly DatabaseContext dbConnection = new DatabaseContext();
 
         public GameController()
         {
@@ -24,11 +24,11 @@ namespace GameHW.Controllers
         [Route("api/games/all")]
         [HttpGet]
 
-        public List<Game> GetAll()
+        public IHttpActionResult GetAllGames()
         {
-            var getAll = this.dbc.Games.ToList();
+            var allGames = this.dbConnection.Games.ToArray();
+            return Ok(allGames);                    
             
-            return getAll;
         }
 
         //List game by given game name.
@@ -39,15 +39,15 @@ namespace GameHW.Controllers
 
         public IHttpActionResult GetByTitle(string GameTitle)
         {
-            var gbt = this.dbc.Games.FirstOrDefault((g) => g.GameTitle == GameTitle);
+            var queryResult = this.dbConnection.Games.FirstOrDefault((g) => g.GameTitle == GameTitle);
 
-            if (gbt == null)
+            if (queryResult == null)
             {
                 return NotFound();
             }
             else
             {
-                return Ok(gbt);
+                return Ok(queryResult);
             }
         }
 
@@ -60,15 +60,15 @@ namespace GameHW.Controllers
 
         public IHttpActionResult GetById(int GameId)
         {
-            var gbt = this.dbc.Games.FirstOrDefault((g) => g.GameId == GameId);
+            var queryResult = this.dbConnection.Games.FirstOrDefault((g) => g.GameId == GameId);
 
-            if (gbt == null)
+            if (queryResult == null)
             {
                 return NotFound();
             }
             else
             {
-                return Ok(gbt);
+                return Ok(queryResult);
             }
         }
 
@@ -81,16 +81,16 @@ namespace GameHW.Controllers
         [Route("api/games")]
         [HttpPost]
 
-        public IHttpActionResult PostNewGame([FromBody]Game gameP)
+        public IHttpActionResult PostNewGame([FromBody]Game game)
         {
             
-                var sameExst = dbc.Games.Any(g => g.GameTitle == gameP.GameTitle);
+                var sameGameExist = dbConnection.Games.Any(g => g.GameTitle == game.GameTitle);
 
-            if (!sameExst)
+            if (!sameGameExist)
             {
-                dbc.Games.Add(gameP);
-                dbc.SaveChanges();
-                return Ok(gameP);
+                dbConnection.Games.Add(game);
+                dbConnection.SaveChanges();
+                return Ok(game);
 
             }
             else
@@ -105,19 +105,19 @@ namespace GameHW.Controllers
         [Route("api/games/{GameId}")]
         [HttpPut]
 
-        public IHttpActionResult PutToModifyGame(int GameId, [FromBody]Game gameP)
+        public IHttpActionResult PutToModifyGame(int GameId, [FromBody]Game game)
         {
-            var doesExst = this.dbc.Games.Any((g) => g.GameId == GameId);
+            var gameExist = this.dbConnection.Games.Any((g) => g.GameId == GameId);
 
-            if (!doesExst)
+            if (!gameExist)
             {
                 return NotFound();
             }
             else
             {
-                var modGame = this.dbc.Games.FirstOrDefault((g) => g.GameId == GameId);
-                modGame.GameTitle = gameP.GameTitle;
-                dbc.SaveChanges();
+                var modGame = this.dbConnection.Games.FirstOrDefault((g) => g.GameId == GameId);
+                modGame.GameTitle = game.GameTitle;
+                dbConnection.SaveChanges();
                 return Ok();
             }
         }
@@ -129,17 +129,17 @@ namespace GameHW.Controllers
         [HttpDelete]
         public IHttpActionResult DeleteGame(int GameId)
         {
-            var removeGame = this.dbc.Games.FirstOrDefault((g) => g.GameId == GameId);
-            var doesExst = this.dbc.Games.Any((g) => g.GameId == GameId);
+            var removeGame = this.dbConnection.Games.FirstOrDefault((g) => g.GameId == GameId);
+            var gameExist = this.dbConnection.Games.Any((g) => g.GameId == GameId);
 
-            if (!doesExst)
+            if (!gameExist)
             {
                 return NotFound();
             }
             else
             {
-                this.dbc.Games.Remove(removeGame);
-                dbc.SaveChanges();
+                this.dbConnection.Games.Remove(removeGame);
+                dbConnection.SaveChanges();
                 return Ok();
             }
         }
